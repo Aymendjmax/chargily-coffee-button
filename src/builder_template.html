@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مُخصِّص ألوان أزرار شارجيلي</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#ffffff; --fg:#1b1a22; --muted:#6a6878; --card:#f5f2fa; --line:#ddd6ea;
+    --brand:#7D00D6; --on-brand:#ffffff; --warn-bg:#fff4e0; --warn-fg:#7a4a00;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14121a; --fg:#f0eef6; --muted:#a4a1b5; --card:#1f1b2b; --line:#383350;
+      --brand:#b66bff; --on-brand:#14121a; --warn-bg:#3a2c10; --warn-fg:#ffd58a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14121a; --fg:#f0eef6; --muted:#a4a1b5; --card:#1f1b2b; --line:#383350;
+    --brand:#b66bff; --on-brand:#14121a; --warn-bg:#3a2c10; --warn-fg:#ffd58a;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Arabic",Tahoma,sans-serif;line-height:1.6}
+  main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:1.35rem;margin:.2rem 0 .2rem}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.95rem}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+  h2{font-size:1rem;margin:0 0 10px}
+  .stage{border-radius:12px;padding:22px 10px;display:flex;justify-content:center;align-items:center;overflow-x:auto;
+    border:1px solid var(--line)}
+  .stage.light{background:#ffffff}
+  .stage.dark{background:#0d1117}
+  .stage.checker{background-color:#fff;
+    background-image:linear-gradient(45deg,#d8d8d8 25%,transparent 25%,transparent 75%,#d8d8d8 75%),
+                     linear-gradient(45deg,#d8d8d8 25%,transparent 25%,transparent 75%,#d8d8d8 75%);
+    background-size:20px 20px;background-position:0 0,10px 10px}
+  .stage svg{max-width:100%;height:auto;display:block}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;
+    padding:7px 14px;font:inherit;font-size:.92rem;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+  .slot{display:grid;grid-template-columns:1fr auto auto;gap:8px 10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+  .slot:first-of-type{border-top:0}
+  .slot .name{font-weight:600;font-size:.95rem}
+  .slot .hint{display:block;color:var(--muted);font-weight:400;font-size:.8rem}
+  .slot input[type=color]{width:44px;height:36px;padding:0;border:1px solid var(--line);border-radius:8px;background:none}
+  .slot input[type=text]{width:92px;direction:ltr;text-align:center;font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;
+    padding:7px 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+  .slot input[type=text].bad{border-color:#d33}
+  .slot label.tr{grid-column:1 / -1;font-size:.85rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+  .warn{background:var(--warn-bg);color:var(--warn-fg);border-radius:10px;padding:8px 12px;font-size:.9rem;margin-top:10px}
+  .warn[hidden]{display:none}
+  .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+  .btn{appearance:none;border:0;border-radius:12px;padding:11px 12px;font:inherit;font-weight:600;cursor:pointer;
+    background:var(--brand);color:var(--on-brand)}
+  .btn.alt{background:var(--bg);color:var(--fg);border:1px solid var(--line)}
+  textarea{width:100%;min-height:92px;direction:ltr;text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.82rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical}
+  .toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom,0px));margin:auto;width:max-content;max-width:90%;
+    background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.show{opacity:1}
+  footer{color:var(--muted);font-size:.82rem;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <h1>مُخصِّص ألوان أزرار شارجيلي ☕</h1>
+  <p class="sub">اختر العبارة، ثم الألوان التي تريدها، وانسخ الزر أو نزّله. لا شيء يُرسل لأي خادم؛ كل العمل يتم داخل متصفحك.</p>
+
+  <section aria-labelledby="h-prev">
+    <h2 id="h-prev">المعاينة</h2>
+    <div id="stage" class="stage light" aria-live="polite"></div>
+    <div class="row" style="margin-top:10px" id="bgchips" role="group" aria-label="خلفية المعاينة">
+      <button class="chip" data-bg="light" aria-pressed="true" type="button">خلفية فاتحة</button>
+      <button class="chip" data-bg="dark" aria-pressed="false" type="button">خلفية داكنة</button>
+      <button class="chip" data-bg="checker" aria-pressed="false" type="button">مخططة (للشفاف)</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-phrase">
+    <h2 id="h-phrase">العبارة</h2>
+    <div class="row" id="phrases" role="group" aria-label="العبارة"></div>
+  </section>
+
+  <section aria-labelledby="h-presets">
+    <h2 id="h-presets">إعدادات جاهزة</h2>
+    <div class="row" id="presets" role="group" aria-label="إعدادات جاهزة"></div>
+  </section>
+
+  <section aria-labelledby="h-colors">
+    <h2 id="h-colors">الألوان</h2>
+    <div id="slots"></div>
+    <div id="warn" class="warn" hidden></div>
+  </section>
+
+  <section aria-labelledby="h-out">
+    <h2 id="h-out">الإخراج</h2>
+    <div class="actions">
+      <button class="btn" id="copySvg" type="button">نسخ SVG</button>
+      <button class="btn" id="dlSvg" type="button">تنزيل SVG</button>
+      <button class="btn" id="dlPng" type="button">تنزيل PNG</button>
+      <button class="btn alt" id="copyMd" type="button">نسخ سطر Markdown</button>
+      <button class="btn alt" id="copyLink" type="button">نسخ رابط هذا الإعداد</button>
+    </div>
+    <p class="sub" style="margin:12px 0 6px">سطر Markdown (بدّل رابط الدفع واسم الملف):</p>
+    <textarea id="md" readonly aria-label="سطر Markdown"></textarea>
+  </section>
+
+  <footer>مشروع غير رسمي، واسم شارجيلي وشعارها ملك لأصحابهما — راجع ملف NOTICE.md في المستودع.</footer>
+</main>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+const TEMPLATES = /*__TEMPLATES__*/{};
+const PRESETS   = /*__PRESETS__*/{};
+const SLOTS     = /*__SLOTS__*/[];
+const LABELS    = /*__LABELS__*/{};
+
+const SLOT_TEXT = {
+  button:       ["خلفية الزر", "المساحة الكبيرة خلف الكلام"],
+  outline:      ["الإطار", "الخط المحيط بالزر"],
+  font:         ["الحروف والنقاط", "كل الكلمات وكل النقاط المربعة"],
+  logo:         ["وجه الشعار", "الشكل الأمامي الكبير في علامة شارجيلي"],
+  accent:       ["لون التمييز", "الطبقة الوسطى للعلامة + نقطة الجيم"],
+  accent_light: ["لون التمييز الفاتح", "الطبقة الخلفية للعلامة"],
+};
+const PRESET_TEXT = {purple:"بنفسجي", light:"فاتح", mono:"أبيض وأسود", "mono-dark":"أسود وأبيض"};
+const PHRASE_ORDER = Object.keys(TEMPLATES);
+
+const state = { phrase: PHRASE_ORDER[0], preset: "purple", colors: {}, bg: "light" };
+
+function normHex(v){
+  v = String(v).trim().toLowerCase();
+  if (v === "none" || v === "transparent") return "none";
+  v = v.replace(/^#/, "");
+  if (/^[0-9a-f]{3}$/.test(v)) v = v.split("").map(c => c + c).join("");
+  return /^[0-9a-f]{6}$/.test(v) ? "#" + v.toUpperCase() : null;
+}
+function lum(h){
+  const c = [1,3,5].map(i => parseInt(h.substr(i,2),16)/255).map(x => x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4));
+  return .2126*c[0] + .7152*c[1] + .0722*c[2];
+}
+function contrast(a,b){ const x = lum(a), y = lum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+
+function setPreset(name){
+  state.preset = name;
+  state.colors = Object.assign({}, PRESETS[name]);
+}
+function currentSvg(){
+  let svg = TEMPLATES[state.phrase];
+  SLOTS.forEach(s => { svg = svg.split(s.token).join(state.colors[s.key]); });
+  return svg;
+}
+function paramsFor(){
+  const p = new URLSearchParams();
+  p.set("phrase", state.phrase);
+  SLOTS.forEach(s => { const v = state.colors[s.key]; p.set(s.param, v === "none" ? "transparent" : v.replace("#","")); });
+  return p;
+}
+function shareUrl(){
+  const base = location.href.split("#")[0].split("?")[0];
+  return base + "?" + paramsFor().toString();
+}
+function mdLine(){
+  return "[![" + LABELS[state.phrase] + "](assets/support-button.svg)](رابط_الدفع_الخاص_بك)";
+}
+
+function renderAll(){
+  document.getElementById("stage").innerHTML = currentSvg();
+  document.getElementById("md").value = mdLine();
+  // chips
+  document.querySelectorAll("#phrases .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.phrase === state.phrase)));
+  document.querySelectorAll("#presets .chip").forEach(b => {
+    const same = SLOTS.every(s => PRESETS[b.dataset.preset][s.key].toLowerCase() === state.colors[s.key].toLowerCase());
+    b.setAttribute("aria-pressed", String(same));
+  });
+  // inputs
+  SLOTS.forEach(s => {
+    const v = state.colors[s.key];
+    const txt = document.getElementById("t-" + s.key), col = document.getElementById("c-" + s.key);
+    if (document.activeElement !== txt) txt.value = v === "none" ? "none" : v;
+    if (v !== "none") col.value = v.toLowerCase();
+    txt.classList.remove("bad");
+    const tr = document.getElementById("tr-" + s.key);
+    if (tr) tr.checked = v === "none";
+  });
+  // contrast warning
+  const w = [];
+  if (state.colors.button !== "none"){
+    [["font","الحروف"],["logo","وجه الشعار"]].forEach(([k,l]) => {
+      const r = contrast(state.colors[k], state.colors.button);
+      if (r < 3) w.push("تباين " + l + " مع الخلفية منخفض (" + r.toFixed(1) + ":1، المستحسن 3:1 فأكثر).");
+    });
+  }
+  const el = document.getElementById("warn");
+  el.hidden = !w.length; el.textContent = w.join(" ");
+  // keep the URL in sync (may be blocked in sandboxed viewers)
+  try { history.replaceState(null, "", "?" + paramsFor().toString()); } catch(e) {}
+}
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+}
+async function copyText(text, okMsg){
+  try { await navigator.clipboard.writeText(text); toast(okMsg); return; } catch(e) {}
+  try {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove();
+    toast(ok ? okMsg : "تعذّر النسخ تلقائياً — انسخ يدوياً من الحقل");
+  } catch(e) { toast("تعذّر النسخ تلقائياً — انسخ يدوياً من الحقل"); }
+}
+function download(blob, name){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function fileStem(){ return "chargily-" + (state.phrase) + "-custom"; }
+function downloadPng(){
+  const svg = currentSvg();
+  const m = svg.match(/viewBox="[^"]*?([\d.]+) ([\d.]+)"/);
+  const vw = parseFloat(m[1]), vh = parseFloat(m[2]), W = 1200, H = Math.round(W * vh / vw);
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    c.getContext("2d").drawImage(img, 0, 0, W, H);
+    c.toBlob(b => b ? download(b, fileStem() + ".png") : toast("تعذّر إنشاء PNG"), "image/png");
+  };
+  img.onerror = () => toast("تعذّر إنشاء PNG في هذا المتصفح");
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+function build(){
+  // phrases
+  const ph = document.getElementById("phrases");
+  PHRASE_ORDER.forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.phrase = p; b.textContent = LABELS[p];
+    b.addEventListener("click", () => { state.phrase = p; renderAll(); }); ph.appendChild(b);
+  });
+  // presets
+  const pr = document.getElementById("presets");
+  Object.keys(PRESETS).forEach(n => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.preset = n; b.textContent = PRESET_TEXT[n] || n;
+    b.addEventListener("click", () => { setPreset(n); renderAll(); }); pr.appendChild(b);
+  });
+  // slots
+  const host = document.getElementById("slots");
+  SLOTS.forEach(s => {
+    const d = document.createElement("div"); d.className = "slot";
+    const [name, hint] = SLOT_TEXT[s.key];
+    d.innerHTML = '<div class="name">' + name + '<span class="hint">' + hint + ' — <code dir="ltr">' + s.param + '</code></span></div>' +
+      '<input type="color" id="c-' + s.key + '" aria-label="' + name + '">' +
+      '<input type="text" id="t-' + s.key + '" maxlength="11" spellcheck="false" autocomplete="off" aria-label="' + name + ' (HEX)">' +
+      (s.transparent ? '<label class="tr"><input type="checkbox" id="tr-' + s.key + '"> شفاف (بدون ' + (s.key === "button" ? "خلفية" : "إطار") + ')</label>' : "");
+    host.appendChild(d);
+    const col = d.querySelector("#c-" + s.key), txt = d.querySelector("#t-" + s.key);
+    col.addEventListener("input", () => { state.colors[s.key] = normHex(col.value); renderAll(); });
+    txt.addEventListener("input", () => {
+      const v = normHex(txt.value);
+      if (v === null) { txt.classList.add("bad"); return; }
+      if (v === "none" && !s.transparent) { txt.classList.add("bad"); return; }
+      state.colors[s.key] = v; renderAll();
+    });
+    txt.addEventListener("blur", () => { txt.value = state.colors[s.key]; txt.classList.remove("bad"); });
+    const tr = d.querySelector("#tr-" + s.key);
+    if (tr) tr.addEventListener("change", () => {
+      state.colors[s.key] = tr.checked ? "none" : normHex(col.value) || PRESETS[state.preset][s.key];
+      if (state.colors[s.key] === "none" && state.bg === "light") setBg("checker");
+      renderAll();
+    });
+  });
+  // preview background chips
+  document.querySelectorAll("#bgchips .chip").forEach(b => b.addEventListener("click", () => setBg(b.dataset.bg)));
+  // actions
+  document.getElementById("copySvg").addEventListener("click", () => copyText(currentSvg(), "تم نسخ SVG"));
+  document.getElementById("dlSvg").addEventListener("click", () => download(new Blob([currentSvg()], {type:"image/svg+xml"}), fileStem() + ".svg"));
+  document.getElementById("dlPng").addEventListener("click", downloadPng);
+  document.getElementById("copyMd").addEventListener("click", () => copyText(mdLine(), "تم نسخ سطر Markdown"));
+  document.getElementById("copyLink").addEventListener("click", () => copyText(shareUrl(), "تم نسخ رابط الإعداد"));
+}
+function setBg(bg){
+  state.bg = bg;
+  document.getElementById("stage").className = "stage " + bg;
+  document.querySelectorAll("#bgchips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.bg === bg)));
+}
+
+function readUrl(){
+  const q = new URLSearchParams(location.search);
+  setPreset(PRESETS[q.get("preset")] ? q.get("preset") : "purple");
+  if (TEMPLATES[q.get("phrase")]) state.phrase = q.get("phrase");
+  SLOTS.forEach(s => {
+    const raw = q.get(s.param);
+    if (raw === null) return;
+    const v = normHex(raw);
+    if (v && (v !== "none" || s.transparent)) state.colors[s.key] = v;
+  });
+}
+
+build();
+readUrl();
+renderAll();
+</script>
+</body>
+</html>

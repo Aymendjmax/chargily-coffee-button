@@ -16,6 +16,13 @@
 4. شغّل `python3 src/build_button.py` وتأكد أن ملفات العبارات القديمة لم تتغير (`git diff --stat assets/`).
 5. حدّث README وdocs/USAGE.md وdocs/DESIGN.md وصفحة `examples/index.html` وCHANGELOG.md.
 
+## إضافة إعداد ألوان جاهز
+
+1. أضف مدخلاً جديداً إلى القاموس `PRESETS` في `src/build_button.py` بالخانات الست.
+2. أضف اسمه العربي إلى `PRESET_TEXT` في `src/builder_template.html`.
+3. شغّل `python3 src/build_button.py` ليولّد ملفات `assets/` وصفحة `builder/index.html`.
+4. لا تعدّل `builder/index.html` يدوياً (مُولَّدة)، وحدّث `docs/CUSTOMIZE.md` بجدول الإعدادات.
+
 ## قبل فتح Pull Request
 
 1. عدّل الثوابت أو الدوال في `src/build_button.py` (لا تعدّل ملفات `assets/` يدوياً، فهي مُولَّدة).

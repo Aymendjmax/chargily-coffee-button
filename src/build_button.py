@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
 """
-chargily-coffee-button — مولّد أزرار «شارجيلي»
------------------------------------------------
+chargily-coffee-button — مولّد أزرار «شارجيلي» (مع تخصيص الألوان)
+-----------------------------------------------------------------
 يقرأ الشعار العربي من brand/chargily-logo-ar.svg، ويرسم الكلمات الإضافية برمجياً بنفس هندسة
-خط «شارجيلي» (سماكة موحّدة، خط أساس واحد، نقاط مربعة، أنصاف أقطار ثابتة)، ثم يكتب لكل عبارة نسختين:
+خط «شارجيلي»، ثم يكتب أزراراً جاهزة بأي ألوان تريد.
 
-    «شارجيلي قهوة»      →  assets/{svg,png}/chargily-coffee-{purple,light}.{svg,png}
-    «شارجيلي شويا صرف»  →  assets/{svg,png}/chargily-sarf-{purple,light}.{svg,png}
+الخانات اللونية الست (بأسماء على طريقة Buy Me a Coffee: HEX بدون #):
+    button_colour        خلفية الزر                       --button-colour
+    outline_colour       الإطار                           --outline-colour
+    font_colour          الحروف والنقاط                   --font-colour
+    logo_colour          الوجه الأمامي لعلامة الشعار      --logo-colour
+    accent_colour        لون التمييز: الطبقة الوسطى للعلامة + نقطة الجيم   --accent-colour
+    accent_light_colour  الطبقة الخلفية الفاتحة للعلامة   --accent-light-colour
 
 التشغيل:
-    python3 src/build_button.py            # كل العبارات
-    python3 src/build_button.py sarf       # عبارة واحدة (coffee | sarf)
+    python3 src/build_button.py                              # كل العبارات × كل الإعدادات الجاهزة → assets/
+    python3 src/build_button.py sarf --preset mono           # عبارة واحدة، إعداد جاهز واحد → assets/
+    python3 src/build_button.py coffee --button-colour 0B3D2E --font-colour FFFFFF --name green
+                                                             # ألوان مخصصة → out/chargily-coffee-green.svg
+    python3 src/build_button.py --list-presets
 
-ملفات PNG تحتاج cairosvg (اختياري).
+العبارات: coffee | sarf        الإعدادات الجاهزة: purple | light | mono | mono-dark
+ملفات PNG تحتاج cairosvg (اختياري). كما يُولَّد builder/index.html (صفحة اختيار الألوان) مع التوليد الكامل.
 """
+import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -22,7 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 LOGO = ROOT / "brand" / "chargily-logo-ar.svg"
 
 # ── ألوان الهوية ─────────────────────────────────────────────────────────────
-PURPLE, CYAN = "#7D00D6", "#12d1fa"
+PURPLE, CYAN, PALE = "#7D00D6", "#12d1fa", "#b0f5ff"   # ألوان الشعار الأصلية (مفاتيح الاستبدال)
 WHITE = "#FFFFFF"
 
 # ── هندسة الخط (مقيسة من ملف الشعار الأصلي، بوحدات viewBox الأصلية 874.52 × 258.54) ──
@@ -218,18 +229,79 @@ PHRASES = {
     "sarf": (phrase_sarf, "شارجيلي شويا صرف"),
 }
 
+# ── الخانات اللونية ───────────────────────────────────────────────────────────
+# (المفتاح الداخلي، اسم المعامل بأسلوب Buy Me a Coffee، علامة القالب، يقبل «شفاف»؟)
+SLOTS = [
+    ("button", "button_colour", "@@BUTTON@@", True),
+    ("outline", "outline_colour", "@@OUTLINE@@", True),
+    ("font", "font_colour", "@@FONT@@", False),
+    ("logo", "logo_colour", "@@LOGO@@", False),
+    ("accent", "accent_colour", "@@ACCENT@@", False),
+    ("accent_light", "accent_light_colour", "@@ACCENT_LIGHT@@", False),
+]
+SLOT_PARAM = {key: param for key, param, _, _ in SLOTS}
+SLOT_TOKEN = {key: tok for key, _, tok, _ in SLOTS}
+TRANSPARENT_OK = {key for key, _, _, tr in SLOTS if tr}
 
-def build(phrase: str, variant: str) -> str:
-    """phrase = coffee | sarf ، variant = 'light' (خلفية بيضاء، إطار بنفسجي) أو 'purple' (خلفية بنفسجية، حروف بيضاء)."""
+# الإعدادات الجاهزة. الأولان هما الأصل، و«mono» مثال أبيض/أسود/رمادي.
+PRESETS = {
+    "purple": dict(button="#7D00D6", outline="#7D00D6", font="#FFFFFF", logo="#FFFFFF",
+                   accent="#12d1fa", accent_light="#b0f5ff"),
+    "light": dict(button="#FFFFFF", outline="#7D00D6", font="#7D00D6", logo="#7D00D6",
+                  accent="#12d1fa", accent_light="#b0f5ff"),
+    "mono": dict(button="#FFFFFF", outline="#111111", font="#111111", logo="#111111",
+                 accent="#8C8C8C", accent_light="#D4D4D4"),
+    "mono-dark": dict(button="#111111", outline="#111111", font="#FFFFFF", logo="#FFFFFF",
+                      accent="#A0A0A0", accent_light="#5C5C5C"),
+}
+
+
+def normalize_color(value: str, slot: str) -> str:
+    """يقبل ABC أو AABBCC أو #AABBCC، وتُقبل none/transparent للخلفية والإطار فقط. يعيد #RRGGBB أو none."""
+    v = value.strip().lower()
+    if v in ("none", "transparent"):
+        if slot in TRANSPARENT_OK:
+            return "none"
+        raise ValueError(f"اللون «شفاف» غير مسموح لـ {SLOT_PARAM[slot]}")
+    v = v.lstrip("#")
+    if re.fullmatch(r"[0-9a-f]{3}", v):
+        v = "".join(c * 2 for c in v)
+    if not re.fullmatch(r"[0-9a-f]{6}", v):
+        raise ValueError(f"قيمة لون غير صالحة لـ {SLOT_PARAM[slot]}: «{value}» (استخدم HEX مثل 7D00D6)")
+    return "#" + v.upper()
+
+
+def luminance(hex_color: str) -> float:
+    r, g, b = (int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    lin = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+
+
+def contrast(a: str, b: str) -> float:
+    la, lb = sorted((luminance(a), luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def contrast_warnings(p: dict) -> list:
+    """تحذيرات التباين (حد WCAG للعناصر الكبيرة = 3:1)."""
+    out = []
+    if p["button"] != "none":
+        for key, label in (("font", "الحروف"), ("logo", "وجه الشعار")):
+            c = p[key] if p[key] != "none" else None
+            if c and contrast(c, p["button"]) < 3:
+                out.append(f"تباين {label} مع الخلفية منخفض ({contrast(c, p['button']):.1f}:1، المستحسن 3:1 فأكثر)")
+    return out
+
+
+# ── القالب والتلوين ───────────────────────────────────────────────────────────
+def build_template(phrase: str) -> str:
+    """SVG بعلامات لونية (@@FONT@@ …). الهندسة مستقلة تماماً عن الألوان."""
     compose, label = PHRASES[phrase]
-    if variant == "light":
-        bg, ink, front = WHITE, PURPLE, PURPLE
-    else:
-        bg, ink, front = PURPLE, WHITE, WHITE
     mark, text = load_logo()
-    mark_s = "".join(m.replace(PURPLE, front) for m in mark)
-    text_s = "".join(t.replace(PURPLE, ink) for t in text)
-    elements, left = compose(ink, text_s)
+    mark_s = "".join(m.replace(PURPLE, SLOT_TOKEN["logo"]).replace(CYAN, SLOT_TOKEN["accent"])
+                      .replace(PALE, SLOT_TOKEN["accent_light"]) for m in mark)
+    text_s = "".join(t.replace(PURPLE, SLOT_TOKEN["font"]).replace(CYAN, SLOT_TOKEN["accent"]) for t in text)
+    elements, left = compose(SLOT_TOKEN["font"], text_s)
 
     pad = 76
     x0, y0 = left - pad, -pad
@@ -239,34 +311,120 @@ def build(phrase: str, variant: str) -> str:
         f'width="{f(w / 4)}" height="{f(h / 4)}" role="img" aria-label="{label}">'
         f'<title>{label}</title>'
         f'<rect x="{f(x0 + 5)}" y="{f(y0 + 5)}" width="{f(w - 10)}" height="{f(h - 10)}" rx="68" '
-        f'fill="{bg}" stroke="{PURPLE}" stroke-width="10"/>'
+        f'fill="{SLOT_TOKEN["button"]}" stroke="{SLOT_TOKEN["outline"]}" stroke-width="10"/>'
         f'{mark_s}{text_s}{elements}</svg>'
     )
 
 
-def main():
-    wanted = sys.argv[1:] or list(PHRASES)
-    unknown = [p for p in wanted if p not in PHRASES]
-    if unknown:
-        sys.exit(f"عبارة غير معروفة: {unknown} — المتاح: {', '.join(PHRASES)}")
-    svg_dir, png_dir = ROOT / "assets" / "svg", ROOT / "assets" / "png"
-    svg_dir.mkdir(parents=True, exist_ok=True)
-    png_dir.mkdir(parents=True, exist_ok=True)
+def render(template: str, palette: dict) -> str:
+    for key, token in SLOT_TOKEN.items():
+        template = template.replace(token, palette[key])
+    return template
+
+
+def build(phrase: str, preset: str = "purple", overrides: dict = None) -> str:
+    palette = dict(PRESETS[preset])
+    palette.update(overrides or {})
+    return render(build_template(phrase), palette)
+
+
+# ── صفحة اختيار الألوان (builder) ─────────────────────────────────────────────
+def write_builder():
+    src = ROOT / "src" / "builder_template.html"
+    if not src.exists():
+        return
+    templates = {p: build_template(p) for p in PHRASES}
+    slots = [{"key": k, "param": p, "token": t, "transparent": tr} for k, p, t, tr in SLOTS]
+    labels = {p: lbl for p, (_, lbl) in PHRASES.items()}
+    html = (src.read_text(encoding="utf-8")
+            .replace("/*__TEMPLATES__*/{}", json.dumps(templates, ensure_ascii=False))
+            .replace("/*__PRESETS__*/{}", json.dumps(PRESETS, ensure_ascii=False))
+            .replace("/*__SLOTS__*/[]", json.dumps(slots, ensure_ascii=False))
+            .replace("/*__LABELS__*/{}", json.dumps(labels, ensure_ascii=False)))
+    out = ROOT / "builder" / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
+    print("✔", out.relative_to(ROOT))
+
+
+# ── سطر الأوامر ───────────────────────────────────────────────────────────────
+def parse_args(argv):
+    ap = argparse.ArgumentParser(description="مولّد أزرار شارجيلي — مع تخصيص الألوان",
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("phrases", nargs="*", help="coffee و/أو sarf (الافتراضي: الاثنتان)")
+    ap.add_argument("--preset", choices=list(PRESETS), help="إعداد جاهز؛ يكون أساس الألوان المخصصة أيضاً (الافتراضي purple)")
+    for key, param, _, tr in SLOTS:
+        flag = "--" + param.replace("_", "-")
+        alias = flag.replace("colour", "color")
+        ap.add_argument(flag, alias, dest=key, metavar="HEX",
+                        help=f"{param}" + (" (أو none للشفاف)" if tr else ""))
+    ap.add_argument("--name", help="اسم الملف الناتج للألوان المخصصة (الافتراضي custom)")
+    ap.add_argument("--out", help="مجلد الإخراج للألوان المخصصة (الافتراضي out/)")
+    ap.add_argument("--width", type=int, default=1200, help="عرض PNG بالبكسل (الافتراضي 1200)")
+    ap.add_argument("--no-png", action="store_true", help="توليد SVG فقط")
+    ap.add_argument("--list-presets", action="store_true", help="عرض الإعدادات الجاهزة وخروج")
+    return ap.parse_args(argv)
+
+
+def save(phrase, name, palette, out_svg: Path, out_png: Path, width: int, cairosvg):
+    out_svg.parent.mkdir(parents=True, exist_ok=True)
+    out_svg.write_text(render(build_template(phrase), palette), encoding="utf-8")
+    print("✔", out_svg.relative_to(ROOT) if ROOT in out_svg.parents else out_svg)
+    for w in contrast_warnings(palette):
+        print("  ⚠", w)
+    if cairosvg:
+        out_png.parent.mkdir(parents=True, exist_ok=True)
+        cairosvg.svg2png(url=str(out_svg), write_to=str(out_png), output_width=width)
+        print("✔", out_png.relative_to(ROOT) if ROOT in out_png.parents else out_png)
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    if args.list_presets:
+        for name, p in PRESETS.items():
+            print(f"{name:10s}", "  ".join(f"{SLOT_PARAM[k]}={v}" for k, v in p.items()))
+        return
+    phrases = args.phrases or list(PHRASES)
+    bad = [p for p in phrases if p not in PHRASES]
+    if bad:
+        sys.exit(f"عبارة غير معروفة: {bad} — المتاح: {', '.join(PHRASES)}")
+
+    overrides = {}
+    try:
+        for key in SLOT_PARAM:
+            val = getattr(args, key)
+            if val is not None:
+                overrides[key] = normalize_color(val, key)
+    except ValueError as e:
+        sys.exit(f"خطأ: {e}")
+
     try:
         import cairosvg
     except ImportError:
         cairosvg = None
+    if cairosvg is None and not args.no_png:
         print("تنبيه: cairosvg غير مثبّتة، سيتم توليد SVG فقط (pip install cairosvg).")
-    for phrase in wanted:
-        for variant in ("purple", "light"):
-            name = f"chargily-{phrase}-{variant}"
-            out = svg_dir / f"{name}.svg"
-            out.write_text(build(phrase, variant), encoding="utf-8")
-            print("✔", out.relative_to(ROOT))
-            if cairosvg:
-                png = png_dir / f"{name}.png"
-                cairosvg.svg2png(url=str(out), write_to=str(png), output_width=1200)
-                print("✔", png.relative_to(ROOT))
+    if args.no_png:
+        cairosvg = None
+
+    if overrides or args.name:                     # وضع الألوان المخصصة
+        base = PRESETS[args.preset or "purple"]
+        palette = {**base, **overrides}
+        out = Path(args.out) if args.out else ROOT / "out"
+        name = args.name or "custom"
+        for phrase in phrases:
+            stem = f"chargily-{phrase}-{name}"
+            save(phrase, name, palette, out / f"{stem}.svg", out / f"{stem}.png", args.width, cairosvg)
+        return
+
+    presets = [args.preset] if args.preset else list(PRESETS)       # الإعدادات الجاهزة → assets/
+    for phrase in phrases:
+        for preset in presets:
+            stem = f"chargily-{phrase}-{preset}"
+            save(phrase, preset, PRESETS[preset], ROOT / "assets" / "svg" / f"{stem}.svg",
+                 ROOT / "assets" / "png" / f"{stem}.png", args.width, cairosvg)
+    if not args.phrases and not args.preset:
+        write_builder()
 
 
 if __name__ == "__main__":

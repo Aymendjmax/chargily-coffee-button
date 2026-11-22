@@ -39,6 +39,23 @@
 
 ملفات PNG بعرض 1200px. كل زر له خلفيته الخاصة، فيظهر بشكل سليم في الوضعين الفاتح والداكن على GitHub.
 
+## تخصيص الألوان 🎨
+
+تستطيع تلوين أي زر بما تشاء عبر **ست خانات لونية** بأسماء على طريقة Buy Me a Coffee: `button_colour` و`outline_colour` و`font_colour` و`logo_colour` و`accent_colour` و`accent_light_colour` (قيمها HEX مثل `7D00D6`).
+
+- **صفحة المُخصِّص:** افتح [`builder/index.html`](builder/index.html)، اختر الألوان وشاهد النتيجة فوراً، ثم انسخ الـ SVG أو نزّله (SVG وPNG).
+- **سطر الأوامر:** `python3 src/build_button.py coffee --button-colour 0B3D2E --font-colour FFFFFF --name green`
+- **إعدادات جاهزة:** `purple` و`light` (الأصل)، و`mono` (أبيض وأسود وتدرج رمادي)، و`mono-dark`:
+
+<table>
+<tr>
+<td align="center"><img src="assets/svg/chargily-coffee-mono.svg" width="240" alt="شارجيلي قهوة — أبيض وأسود"></td>
+<td align="center"><img src="assets/svg/chargily-sarf-mono.svg" width="300" alt="شارجيلي شويا صرف — أبيض وأسود"></td>
+</tr>
+</table>
+
+التفاصيل الكاملة في **[docs/CUSTOMIZE.md](docs/CUSTOMIZE.md)**.
+
 ## الاستخدام السريع
 
 1. انسخ ملف الزر الذي تريده من مجلد [`assets/svg`](assets/svg) إلى مستودعك (مثلاً `assets/support-button.svg`).
@@ -58,16 +75,20 @@
 ```text
 chargily-coffee-button/
 ├── assets/
-│   ├── svg/            ← الأزرار النهائية (متجهية، الأفضل للاستخدام): 4 ملفات
-│   └── png/            ← نفس الأزرار بصيغة PNG بعرض 1200px: 4 ملفات
+│   ├── svg/            ← الأزرار النهائية (متجهية، الأفضل للاستخدام): 8 ملفات (عبارتان × 4 إعدادات)
+│   └── png/            ← نفس الأزرار بصيغة PNG بعرض 1200px: 8 ملفات
+├── builder/
+│   └── index.html      ← صفحة تخصيص الألوان (ملف واحد يعمل دون إنترنت، مُولَّد من src/)
 ├── brand/              ← ملفات الشعار الأصلية المستخدمة كمصدر
 ├── src/
-│   └── build_button.py ← المولّد: يرسم «قهوة» و«شويا صرف» برمجياً
+│   ├── build_button.py       ← المولّد: يرسم «قهوة» و«شويا صرف» برمجياً، ويلوّنها، ويولّد builder/
+│   └── builder_template.html ← قالب صفحة التخصيص
 ├── docs/
 │   ├── USAGE.md        ← طرق الاستخدام بالتفصيل
+│   ├── CUSTOMIZE.md    ← تخصيص الألوان: الخانات والإعدادات وسطر الأوامر
 │   └── DESIGN.md       ← كيف صُمّمت الحروف وقياسات الخط
 ├── examples/
-│   └── index.html      ← صفحة معاينة محلية للأزرار الأربعة
+│   └── index.html      ← صفحة معاينة محلية للأزرار
 ├── NOTICE.md           ← تنبيه العلامة التجارية
 ├── CONTRIBUTING.md · CHANGELOG.md · LICENSE · requirements.txt
 ```
@@ -78,8 +99,9 @@ chargily-coffee-button/
 
 ```bash
 pip install -r requirements.txt       # cairosvg لتوليد PNG (اختياري)
-python3 src/build_button.py           # كل العبارات
-python3 src/build_button.py sarf      # عبارة واحدة: coffee أو sarf
+python3 src/build_button.py                       # كل العبارات × كل الإعدادات الجاهزة + صفحة builder/
+python3 src/build_button.py sarf --preset mono    # عبارة واحدة وإعداد واحد
+python3 src/build_button.py --list-presets        # عرض الإعدادات الجاهزة
 ```
 
 تفاصيل القياسات وقصة تصميم كل حرف في **[docs/DESIGN.md](docs/DESIGN.md)**.
@@ -92,11 +114,11 @@ python3 src/build_button.py sarf      # عبارة واحدة: coffee أو sarf
 
 ## المساهمة
 
-الأفكار والتحسينات مرحّب بها: عبارات جديدة، نسخة إنجليزية، ألوان إضافية، تحسين شكل حرف. اقرأ [CONTRIBUTING.md](CONTRIBUTING.md) ثم افتح Issue أو Pull Request.
+الأفكار والتحسينات مرحّب بها: عبارات جديدة، نسخة إنجليزية، إعدادات ألوان جاهزة، تحسين شكل حرف. اقرأ [CONTRIBUTING.md](CONTRIBUTING.md) ثم افتح Issue أو Pull Request.
 
 ## الكلمات المفتاحية
 
-زر دعم · زر تبرع · شارجيلي · شارجيلي قهوة · شارجيلي شويا صرف · الذهبية · CIB · الجزائر · دارجة جزائرية · دفع إلكتروني جزائري · بديل Buy Me a Coffee · README badge · خط عربي هندسي · SVG
+زر دعم · زر تبرع · تخصيص ألوان الزر · شارجيلي · شارجيلي قهوة · شارجيلي شويا صرف · الذهبية · CIB · الجزائر · دارجة جزائرية · دفع إلكتروني جزائري · بديل Buy Me a Coffee · README badge · خط عربي هندسي · SVG
 
 </div>
 
@@ -111,7 +133,7 @@ python3 src/build_button.py sarf      # عبارة واحدة: coffee أو sarf
 - **«شارجيلي قهوة»** — "Chargily, a coffee".
 - **«شارجيلي شويا صرف»** — "Chargily, a bit of change/money".
 
-Each phrase comes in two variants (filled purple / light), as **SVG and PNG**. The buttons are meant to link to your own payment link on **[Chargily](https://github.com/Chargily)**, the Algerian payment gateway that supports **EDAHABIA** and **CIB** cards.
+Each phrase comes in four ready-made colour presets (purple, light, mono, mono-dark), as **SVG and PNG**, and **every colour is customizable** (six hex slots named like Buy Me a Coffee's: `button_colour`, `outline_colour`, `font_colour`, `logo_colour`, `accent_colour`, `accent_light_colour`) through `builder/index.html` or the CLI — see [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md). The buttons are meant to link to your own payment link on **[Chargily](https://github.com/Chargily)**, the Algerian payment gateway that supports **EDAHABIA** and **CIB** cards.
 
 The extra Arabic words are **generated in code** to match the geometric lettering of the Chargily wordmark (`src/build_button.py`); the letter ش in «شويا» is cut from the wordmark itself. Code: MIT. Chargily's name and logo belong to their owners — see [NOTICE.md](NOTICE.md).
 
