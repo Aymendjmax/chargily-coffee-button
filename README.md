@@ -8,6 +8,8 @@
 <br><br>
 <img src="assets/svg/chargily-sarf-purple.svg" alt="شارجيلي شويا صرف" width="400">
 
+**[🌐 الموقع: aymendjmax.github.io/chargily-coffee-button](https://aymendjmax.github.io/chargily-coffee-button/)** — صفحة هبوط بروابط SVG مباشرة لكل الأزرار
+
 [![License: MIT](https://img.shields.io/badge/code-MIT-7D00D6.svg)](LICENSE)
 [![SVG](https://img.shields.io/badge/format-SVG%20%2B%20PNG-12d1fa.svg)](assets)
 [![Unofficial](https://img.shields.io/badge/chargily-unofficial-lightgrey.svg)](NOTICE.md)
@@ -74,6 +76,7 @@
 
 ```text
 chargily-coffee-button/
+├── index.html          ← صفحة الهبوط (GitHub Pages، مُولَّدة من src/site_template.html)
 ├── assets/
 │   ├── svg/            ← الأزرار النهائية (متجهية، الأفضل للاستخدام): 8 ملفات (عبارتان × 4 إعدادات)
 │   └── png/            ← نفس الأزرار بصيغة PNG بعرض 1200px: 8 ملفات
@@ -82,7 +85,8 @@ chargily-coffee-button/
 ├── brand/              ← ملفات الشعار الأصلية المستخدمة كمصدر
 ├── src/
 │   ├── build_button.py       ← المولّد: يرسم «قهوة» و«شويا صرف» برمجياً، ويلوّنها، ويولّد builder/
-│   └── builder_template.html ← قالب صفحة التخصيص
+│   ├── builder_template.html ← قالب صفحة التخصيص
+│   └── site_template.html    ← قالب صفحة الهبوط
 ├── docs/
 │   ├── USAGE.md        ← طرق الاستخدام بالتفصيل
 │   ├── CUSTOMIZE.md    ← تخصيص الألوان: الخانات والإعدادات وسطر الأوامر
@@ -111,6 +115,10 @@ python3 src/build_button.py --list-presets        # عرض الإعدادات ا
 - هذا مشروع **غير رسمي**، ولا علاقة له بشركة شارجيلي ولا يحمل تأييدها.
 - اسم «Chargily / شارجيلي» وشعارها **ملك لأصحابها**. حروف «قهوة» و«صرف» وغيرها من الحروف المرسومة هنا تقليد لأسلوب الخط وليست خط الشركة الأصلي، أما «ش» في «شويا» فمقصوصة من ملف شعارها.
 - الكود المرخّص بـ MIT هو المولّد والوثائق فقط. اقرأ **[NOTICE.md](NOTICE.md)** قبل استخدام الشعار في مشروع تجاري أو نشره على نطاق واسع.
+
+## المطوّر
+
+طوّره **Akio** — [موقعي الشخصي](https://akio-web.vercel.app) · [GitHub](https://github.com/Aymendjmax).
 
 ## المساهمة
 

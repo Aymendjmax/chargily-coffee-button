@@ -347,6 +347,42 @@ def write_builder():
     print("✔", out.relative_to(ROOT))
 
 
+# ── الموقع (GitHub Pages) ─────────────────────────────────────────────────────
+SITE_URL = "https://aymendjmax.github.io/chargily-coffee-button"
+PRESET_AR = {"purple": "بنفسجي", "light": "فاتح", "mono": "أبيض وأسود", "mono-dark": "أسود وأبيض"}
+
+
+def write_site():
+    """يولّد index.html (صفحة الهبوط) من src/site_template.html مع بطاقات الأزرار وروابطها المباشرة."""
+    src = ROOT / "src" / "site_template.html"
+    if not src.exists():
+        return
+    tabs, groups = [], []
+    for i, (phrase, (_, label)) in enumerate(PHRASES.items()):
+        tabs.append(f'<button class="tab" role="tab" data-g="g-{phrase}" aria-selected="{str(i == 0).lower()}">{label}</button>')
+        cards = []
+        for preset in PRESETS:
+            stem = f"chargily-{phrase}-{preset}"
+            url = f"{SITE_URL}/assets/svg/{stem}.svg"
+            md = f"[![{label}]({url})](رابط_الدفع_الخاص_بك)"
+            html = f'<a href="رابط_الدفع_الخاص_بك"><img src="{url}" width="240" alt="{label}"></a>'
+            esc = lambda t: t.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;")
+            cards.append(
+                f'<article class="card"><div class="pv"><img src="assets/svg/{stem}.svg" alt="{label} — {PRESET_AR[preset]}" loading="lazy"></div>'
+                f'<h3>{PRESET_AR[preset]}<small>{preset}</small></h3><div class="acts">'
+                f'<button class="btn sm" data-copy="{url}" data-msg="تم نسخ رابط SVG">رابط SVG</button>'
+                f'<button class="btn sm alt" data-copy="{esc(md)}" data-msg="تم نسخ Markdown">Markdown</button>'
+                f'<button class="btn sm alt" data-copy="{esc(html)}" data-msg="تم نسخ HTML">HTML</button>'
+                f'<a class="btn sm alt" href="assets/svg/{stem}.svg" download>SVG ↓</a>'
+                f'<a class="btn sm alt" href="assets/png/{stem}.png" download>PNG ↓</a></div></article>')
+        groups.append(f'<div class="group" id="g-{phrase}" role="tabpanel"{"" if i == 0 else " hidden"}><div class="grid">{"".join(cards)}</div></div>')
+    html = (src.read_text(encoding="utf-8").replace("__TABS__", "".join(tabs))
+            .replace("__GROUPS__", "".join(groups)).replace("__SITE_URL__", SITE_URL))
+    (ROOT / "index.html").write_text(html, encoding="utf-8")
+    (ROOT / ".nojekyll").write_text("", encoding="utf-8")
+    print("✔ index.html")
+
+
 # ── سطر الأوامر ───────────────────────────────────────────────────────────────
 def parse_args(argv):
     ap = argparse.ArgumentParser(description="مولّد أزرار شارجيلي — مع تخصيص الألوان",
@@ -425,6 +461,7 @@ def main(argv=None):
                  ROOT / "assets" / "png" / f"{stem}.png", args.width, cairosvg)
     if not args.phrases and not args.preset:
         write_builder()
+        write_site()
 
 
 if __name__ == "__main__":

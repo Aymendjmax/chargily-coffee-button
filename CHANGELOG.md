@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 — 2026-11-22
+- **موقع GitHub Pages**: صفحة هبوط بهوية المشروع (`index.html`) فيها معرض الأزرار الستة عشر مع **رابط SVG مباشر** وسطر Markdown وHTML وتنزيل SVG/PNG لكل زر، وشرح الاستخدام، وروابط المُخصِّص، وبطاقة المطوّر (Akio) مع رابط موقعه الشخصي.
+- المولّد يولّد `index.html` تلقائياً من `src/site_template.html`.
+
 ## 1.2.0 — 2026-11-22
 - **تخصيص الألوان** لكلا العبارتين: ست خانات بأسماء على طريقة Buy Me a Coffee (`button_colour` و`outline_colour` و`font_colour` و`logo_colour` و`accent_colour` و`accent_light_colour`).
 - صفحة **`builder/index.html`**: اختيار الألوان بمعاينة فورية، ونسخ/تنزيل SVG وPNG، وسطر Markdown، ورابط إعداد قابل للمشاركة، وتحذير تباين.
