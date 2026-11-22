@@ -328,6 +328,46 @@ def build(phrase: str, preset: str = "purple", overrides: dict = None) -> str:
     return render(build_template(phrase), palette)
 
 
+# ── العناصر المشتركة بين صفحتي الموقع والمُخصِّص (CSS + الشريط العلوي + المطوّر + التذييل) ──
+GITHUB_URL = "https://github.com/Aymendjmax/chargily-coffee-button"
+DEV_SITE = "https://akio-web.vercel.app"
+
+
+def chrome(root: str, active: str) -> dict:
+    """root = '' للصفحة الرئيسية و'../' لصفحة المُخصِّص؛ active = اسم الرابط الحالي في الشريط."""
+    links = [("buttons", "الأزرار", f"{root}#buttons"), ("use", "الاستخدام", f"{root}#use"),
+             ("builder", "تخصيص الألوان", f"{root}builder/"), ("dev", "المطوّر", f"{root}#dev")]
+    nav = "".join(f'<a href="{href}"' + (' aria-current="page"' if key == active else "") + f'>{label}</a>'
+                  for key, label, href in links)
+    header = (
+        f'<header class="site-header"><div class="wrap bar">'
+        f'<a class="brand" href="{root or "#top"}"><span class="dots" aria-hidden="true"><i></i><i></i></span>شارجيلي قهوة</a>'
+        f'<button id="menu" type="button" aria-label="القائمة" aria-expanded="false" aria-controls="nav">☰</button>'
+        f'<nav id="nav" aria-label="التنقل">{nav}<a class="gh" href="{GITHUB_URL}" rel="noopener">GitHub</a></nav>'
+        f'</div></header>'
+        '<script>(function(){var b=document.getElementById("menu"),n=document.getElementById("nav");'
+        'b.addEventListener("click",function(){var o=n.classList.toggle("open");b.setAttribute("aria-expanded",o)});'
+        'n.addEventListener("click",function(e){if(e.target.closest("a")){n.classList.remove("open");b.setAttribute("aria-expanded",false)}})})();</script>')
+    dev = (
+        '<section id="dev" class="devsec"><div class="wrap"><div class="dev">'
+        '<div class="av" aria-hidden="true">A</div>'
+        '<div class="who"><h2>طوّره Akio</h2><p>مطوّر ومصمم. المشروع غير رسمي وليس تابعاً لشارجيلي.</p></div>'
+        f'<div class="links"><a class="btn" href="{DEV_SITE}" target="_blank" rel="noopener">موقعي الشخصي ↗</a>'
+        '<a class="btn alt" href="https://github.com/Aymendjmax" target="_blank" rel="noopener">GitHub</a></div>'
+        '</div></div></section>')
+    footer = (
+        '<footer><div class="wrap"><span>الكود بترخيص MIT. اسم شارجيلي وشعارها ملك لأصحابهما — '
+        f'<a href="{GITHUB_URL}/blob/main/NOTICE.md">تنبيه العلامة التجارية</a>.</span><span>© 2026 Akio</span></div></footer>')
+    css = (ROOT / "src" / "shared.css").read_text(encoding="utf-8")
+    return {"/*__SHARED_CSS__*/": css, "__HEADER__": header, "__DEV__": dev, "__FOOTER__": footer}
+
+
+def apply_chrome(html: str, root: str, active: str) -> str:
+    for token, value in chrome(root, active).items():
+        html = html.replace(token, value)
+    return html
+
+
 # ── صفحة اختيار الألوان (builder) ─────────────────────────────────────────────
 def write_builder():
     src = ROOT / "src" / "builder_template.html"
@@ -341,6 +381,7 @@ def write_builder():
             .replace("/*__PRESETS__*/{}", json.dumps(PRESETS, ensure_ascii=False))
             .replace("/*__SLOTS__*/[]", json.dumps(slots, ensure_ascii=False))
             .replace("/*__LABELS__*/{}", json.dumps(labels, ensure_ascii=False)))
+    html = apply_chrome(html, "../", "builder")
     out = ROOT / "builder" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
@@ -378,6 +419,7 @@ def write_site():
         groups.append(f'<div class="group" id="g-{phrase}" role="tabpanel"{"" if i == 0 else " hidden"}><div class="grid">{"".join(cards)}</div></div>')
     html = (src.read_text(encoding="utf-8").replace("__TABS__", "".join(tabs))
             .replace("__GROUPS__", "".join(groups)).replace("__SITE_URL__", SITE_URL))
+    html = apply_chrome(html, "", "")
     (ROOT / "index.html").write_text(html, encoding="utf-8")
     (ROOT / ".nojekyll").write_text("", encoding="utf-8")
     print("✔ index.html")
